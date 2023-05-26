@@ -39,7 +39,7 @@ def read_from_binary_file(filename):
     return ''.join(format(byte, '08b') for byte in data_bytes)
 
 def split_data(data, separator):
-    return data.split(separator, 1)
+    return data.split(separator)
 
 def convert_binary_to_code_table(binary_str):
     json_str = ''.join(chr(int(binary_str[i:i+8], 2)) for i in range(0, len(binary_str), 8))

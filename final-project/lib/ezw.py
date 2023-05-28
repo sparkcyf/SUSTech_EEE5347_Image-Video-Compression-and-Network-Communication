@@ -87,3 +87,35 @@ def enc_dp_sp(root_nodes_list):
             dpr_list[i][j] = transverse_encode(root_nodes_list[i][j])
             # print('coor', root_nodes_list[i][j].coordinates, 'done')
     return dpr_list
+
+# decode
+def decode_tree(root, dominant_pass, recon_img):
+    # print('------')
+    # print('threshold:', threshold )
+    # print(root.coordinates)
+    # print(dominant_pass)
+    # print(subdominant_pass)
+    queue = root.children.copy()
+    idx = 0
+    
+    while queue:
+        node = queue.pop(0)
+        ezwcode = dominant_pass[idx]
+        i, j = node.coordinates
+        if ezwcode != "T":
+            recon_img[i, j] = ezwcode
+            idx += 1
+            # print(idx, node.coordinates, node.value)
+        elif ezwcode == 'T': # ZTR
+            idx += 1
+            # print('T')
+            continue
+        if node.children:
+            queue.extend(node.children)
+    return
+
+def dec_dp_sp(dpr_list, recon_root_nodes, recon_img):
+    for i in range(0, 16):
+        for j in range(0, 16):
+            decode_tree(recon_root_nodes[i][j], dpr_list[i][j], recon_img)
+    return recon_img

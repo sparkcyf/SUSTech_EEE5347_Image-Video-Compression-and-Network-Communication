@@ -1,4 +1,5 @@
 import json
+import struct
 
 # encode
 
@@ -45,12 +46,21 @@ def convert_binary_to_code_table(binary_str):
     json_str = ''.join(chr(int(binary_str[i:i+8], 2)) for i in range(0, len(binary_str), 8))
     return json.loads(json_str)
 
-def decode_data(data, code_table):
+def float_to_binary_str(f):
+    return ''.join(bin(c).replace('0b', '').rjust(8, '0') for c in struct.pack('!f', f))
+
+def binary_str_to_float(b):
+    return struct.unpack('!f', bytearray(int(b[i : i + 8], 2) for i in range(0, len(b), 8)))[0]
+
+def decode_data_with_huffman(data, code_table):
     reversed_code_table = {v: k for k, v in code_table.items()}
 
     # Extract the padding size from the start of the data
     pad_size = int(data[:8], 2)
     data = data[8:]
+
+    # Remove the padding from the end of the decoded data
+    data = data[:-pad_size] if pad_size != 0 else data
 
     # Decode the data
     decoded_data = []
@@ -61,7 +71,17 @@ def decode_data(data, code_table):
             decoded_data.append(reversed_code_table[buffer])
             buffer = ''
     
+
+
+    return decoded_data
+
+def decode_data_plain(data):
+
+    # Extract the padding size from the start of the data
+    pad_size = int(data[:8], 2)
+    data = data[8:]
+    
     # Remove the padding from the end of the decoded data
-    decoded_data = decoded_data[:-pad_size] if pad_size != 0 else decoded_data
+    decoded_data = data[:-pad_size] if pad_size != 0 else data
 
     return decoded_data

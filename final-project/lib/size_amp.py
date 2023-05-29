@@ -11,8 +11,8 @@ def convert_from_bin(num):
         return int(num, 2)
     else:
         return -int("1" + num[1:], 2)
-    
 
+   
 def size_amplitude_single_list(input_list):
     input_list = input_list.copy()
     result_size = [] #len of amp, 0, T

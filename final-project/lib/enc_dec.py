@@ -70,8 +70,6 @@ def decode_data_with_huffman(data, code_table):
         if buffer in reversed_code_table:
             decoded_data.append(reversed_code_table[buffer])
             buffer = ''
-    
-
 
     return decoded_data
 

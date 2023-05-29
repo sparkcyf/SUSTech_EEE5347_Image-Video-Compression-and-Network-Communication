@@ -1,4 +1,5 @@
 import numpy as np
+from collections import deque
 
 # create a EZW tree class
 class EZWTree:
@@ -52,26 +53,44 @@ def dfs_set_value(node):
         else:
             node.ezwcode = 'T' #ZTR
             return False
-        
+
+# old version with pop      
+# def bfs_encode_list(root):
+#     # use BFS to traverse the tree
+#     queue = root.children.copy()
+#     dominant_pass_result = []
+#     while queue:
+#         node = queue.pop(0)
+#         # check ezwcode
+#         # check if the node is significant
+#         if node.ezwcode == 'P':
+#             dominant_pass_result.append(int(node.value))
+#         elif node.ezwcode == 'Z':
+#             dominant_pass_result.append(int(node.value))
+#         elif node.ezwcode == 'T':
+#             dominant_pass_result.append(node.ezwcode)
+#             continue
+#         # add the children to the queue
+#         if node.children:
+#             queue.extend(node.children)
+#     return dominant_pass_result
+
 def bfs_encode_list(root):
-    # use BFS to traverse the tree
-    queue = root.children.copy()
+    # Use deque for faster pop from start of queue
+    queue = deque(root.children)
     dominant_pass_result = []
+    
     while queue:
-        node = queue.pop(0)
-        # check ezwcode
-        # check if the node is significant
-        if node.ezwcode == 'P':
-            dominant_pass_result.append(int(node.value))
-        elif node.ezwcode == 'Z':
+        node = queue.popleft()  # O(1) operation
+        if node.ezwcode in {'P', 'Z'}:
             dominant_pass_result.append(int(node.value))
         elif node.ezwcode == 'T':
             dominant_pass_result.append(node.ezwcode)
             continue
-        # add the children to the queue
         if node.children:
             queue.extend(node.children)
     return dominant_pass_result
+
 
 def transverse_encode(root):
     # use DFS to traverse the tree and set the ezwcode
@@ -89,23 +108,45 @@ def enc_dp_sp(root_nodes_list):
     return dpr_list
 
 # decode
+
+# old version with pop
+# def decode_tree(root, dominant_pass, recon_img):
+#     # print('------')
+#     # print('threshold:', threshold )
+#     # print(root.coordinates)
+#     # print(dominant_pass)
+#     # print(subdominant_pass)
+#     queue = root.children.copy()
+#     idx = 0
+    
+#     while queue:
+#         node = queue.pop(0)
+#         ezwcode = dominant_pass[idx]
+#         i, j = node.coordinates
+#         if ezwcode != "T":
+#             recon_img[i, j] = ezwcode
+#             idx += 1
+#             # print(idx, node.coordinates, node.value)
+#         elif ezwcode == 'T': # ZTR
+#             idx += 1
+#             # print('T')
+#             continue
+#         if node.children:
+#             queue.extend(node.children)
+#     return
+
 def decode_tree(root, dominant_pass, recon_img):
-    # print('------')
-    # print('threshold:', threshold )
-    # print(root.coordinates)
-    # print(dominant_pass)
-    # print(subdominant_pass)
-    queue = root.children.copy()
+    # Use deque for faster pop from start of queue
+    queue = deque(root.children)
     idx = 0
     
     while queue:
-        node = queue.pop(0)
+        node = queue.popleft()  # O(1) operation
         ezwcode = dominant_pass[idx]
         i, j = node.coordinates
         if ezwcode != "T":
             recon_img[i, j] = ezwcode
             idx += 1
-            # print(idx, node.coordinates, node.value)
         elif ezwcode == 'T': # ZTR
             idx += 1
             # print('T')
@@ -113,6 +154,7 @@ def decode_tree(root, dominant_pass, recon_img):
         if node.children:
             queue.extend(node.children)
     return
+
 
 def dec_dp_sp(dpr_list, recon_root_nodes, recon_img):
     for i in range(0, 16):

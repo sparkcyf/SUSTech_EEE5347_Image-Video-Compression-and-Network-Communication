@@ -17,14 +17,13 @@ def size_amplitude_single_list(input_list):
     input_list = input_list.copy()
     result_size = [] #len of amp, 0, T
     result_amplitude = []
-    while input_list:
-        num_to_enc = input_list.pop(0)
+    for num_to_enc in input_list: # avoid pop
         if num_to_enc == "T":
             result_size.append("T")
         elif num_to_enc == 0:
             result_size.append("Z")
         else:
-            bin_len = int(np.log2(np.abs(num_to_enc))) + 1
+            bin_len = num_to_enc.bit_length()
             result_size.append(bin_len)
             result_amplitude.append(convert_to_bin(num_to_enc, bin_len))
     result_size.append("E") #EOB
@@ -48,4 +47,33 @@ def size_amplitude_to_2D_list(result_size, result_amplitude):
             amplitude = result_amplitude[result_amplitude_index:result_amplitude_index+size]
             recon_dpr_list[dpr_list_index//16][dpr_list_index%16].append(convert_from_bin(amplitude))
             result_amplitude_index += size
+    return recon_dpr_list
+
+def size_amplitude_to_2D_list_optimized(result_size, result_amplitude):
+    # Convert result_size to a list of tuples with sizes and types for faster access.
+    # This avoids the need for pop(0), which is an O(n) operation.
+    # Tuples are faster to access than lists.
+    result_size = [(int(x), 'N') if x.isdigit() else (x, 'C') for x in result_size]
+
+    result_amplitude_index = 0
+    recon_dpr_list = [[[] for _ in range(16)] for _ in range(16)]
+    dpr_list_index = 0
+
+    # Use enumerate for faster access
+    for size, type_ in result_size:
+        dpr_list_index_div, dpr_list_index_mod = divmod(dpr_list_index, 16)
+        if type_ == 'C':
+            if size == "T":
+                recon_dpr_list[dpr_list_index_div][dpr_list_index_mod].append("T")
+            elif size == "Z":
+                recon_dpr_list[dpr_list_index_div][dpr_list_index_mod].append(0)
+            elif size == "E":
+                dpr_list_index += 1
+        else:
+            # Since result_amplitude only contains 0 and 1, we can use list slicing.
+            # This is faster than repeated calls to convert_from_bin.
+            amplitude = result_amplitude[result_amplitude_index:result_amplitude_index+size]
+            recon_dpr_list[dpr_list_index_div][dpr_list_index_mod].append(convert_from_bin(''.join(str(x) for x in amplitude)))
+            result_amplitude_index += size
+
     return recon_dpr_list

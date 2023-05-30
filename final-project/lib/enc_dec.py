@@ -1,6 +1,6 @@
 import json
 import struct
-
+import requests
 # encode
 
 def pad_encoded_data(data):
@@ -36,6 +36,12 @@ def write_to_binary_file(data, filename):
 def read_from_binary_file(filename):
     with open(filename, 'rb') as file:
         data_bytes = file.read()
+
+    return ''.join(format(byte, '08b') for byte in data_bytes)
+
+def read_from_url(url):
+    response = requests.get(url)
+    data_bytes = response.content
 
     return ''.join(format(byte, '08b') for byte in data_bytes)
 

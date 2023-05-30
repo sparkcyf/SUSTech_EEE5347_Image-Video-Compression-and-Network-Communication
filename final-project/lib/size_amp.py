@@ -50,9 +50,7 @@ def size_amplitude_to_2D_list(result_size, result_amplitude):
     return recon_dpr_list
 
 def size_amplitude_to_2D_list_optimized(result_size, result_amplitude):
-    # Convert result_size to a list of tuples with sizes and types for faster access.
-    # This avoids the need for pop(0), which is an O(n) operation.
-    # Tuples are faster to access than lists.
+    # Avoids the need for pop(0), which is an O(n) operation.
     result_size = [(int(x), 'N') if x.isdigit() else (x, 'C') for x in result_size]
 
     result_amplitude_index = 0
@@ -70,8 +68,6 @@ def size_amplitude_to_2D_list_optimized(result_size, result_amplitude):
             elif size == "E":
                 dpr_list_index += 1
         else:
-            # Since result_amplitude only contains 0 and 1, we can use list slicing.
-            # This is faster than repeated calls to convert_from_bin.
             amplitude = result_amplitude[result_amplitude_index:result_amplitude_index+size]
             recon_dpr_list[dpr_list_index_div][dpr_list_index_mod].append(convert_from_bin(''.join(str(x) for x in amplitude)))
             result_amplitude_index += size
